@@ -48,22 +48,22 @@
           ]
         }
       }
-    },
-    {
-      "type": "Microsoft.Compute/snapshots",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
-      ],
-      "name": "[variables('dataDiskSnapshotName')]",
-      "apiVersion": "2016-04-30-preview",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "creationData": {
-          "createOption": "Copy",
-          "sourceUri": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
-        },
-        "accountType": "Standard_LRS"
-      }
-    }
+    }//,
+    //{
+    //  "type": "Microsoft.Compute/snapshots",
+    //  "dependsOn": [
+    //    "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+    //  ],
+    //  "name": "[variables('dataDiskSnapshotName')]",
+    //  "apiVersion": "2016-04-30-preview",
+    //  "location": "[resourceGroup().location]",
+    //  "properties": {
+    //    "creationData": {
+    //      "createOption": "Copy",
+    //      "sourceUri": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+    //    },
+    //    "accountType": "Standard_LRS"
+    //  }
+    //}
   ]
 }
