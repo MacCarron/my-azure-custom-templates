@@ -21,12 +21,14 @@
       }
     }
   },
-  "variables": {},
+  "variables": {
+    "vmName": "[parameters('vmName')]"
+  },
   "resources": [
     {
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[parameters('vmName')]",
+      "name": "[variables('vmName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [],
       "properties": {
