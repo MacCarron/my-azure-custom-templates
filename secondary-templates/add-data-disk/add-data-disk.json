@@ -19,12 +19,6 @@
       "metadata": {
         "description": "Data Disk Storage Tier"
       }
-    },
-    "dataDiskSize": {
-      "type": "int",
-      "metadata": {
-        "description": "Data Disk Size"
-      }
     }
   },
   "variables": {},
@@ -45,7 +39,7 @@
               },
               "createOption": "Empty",
               "caching": "ReadWrite",
-              "diskSizeGB": "[parameters('dataDiskSize')]",
+              "diskSizeGB": "32",
               "name": "[parameters('dataDiskName')]"
             }
           ]
