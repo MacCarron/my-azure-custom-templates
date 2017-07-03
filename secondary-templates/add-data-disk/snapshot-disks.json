@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vmName": {
+      "type": "string",
+      "metadata": {
+        "description": "This is the name of the your VM"
+      }
+    },
+    "dataDiskName": {
+      "type": "string",
+      "metadata": {
+        "description": "Data Disk Name"
+      }
+    }
+  },
+  "variables": {
+    "osDiskName": "[concat(parameters('vmName'), '-osdisk')]",
+    "osDiskSnapshotName": "[concat(variables('osDiskName'), '-pre-enc-snapshot')]",
+    "dataDiskName": "[concat(parameters('vmName'), '-datadisk01')]",
+    "dataDiskSnapshotName": "[concat(variables('dataDiskName'), '-pre-enc-snapshot')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/snapshots",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+      ],
+      "name": "[variables('osDiskSnapshotName')]",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "creationData": {
+          "createOption": "Copy",
+          "sourceUri": "[resourceId('Microsoft.Compute/disks', variables('osDiskName'))]"
+        },
+        "accountType": "Standard_LRS"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/snapshots",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+      ],
+      "name": "[variables('dataDiskSnapshotName')]",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "creationData": {
+          "createOption": "Copy",
+          "sourceUri": "[resourceId('Microsoft.Compute/disks', variables('dataDiskName'))]"
+        },
+        "accountType": "Standard_LRS"
+      }
+    }
+  ]
+}
