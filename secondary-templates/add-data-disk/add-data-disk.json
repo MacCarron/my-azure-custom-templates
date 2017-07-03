@@ -52,8 +52,7 @@
     {
       "type": "Microsoft.Compute/snapshots",
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
-        "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
       ],
       "name": "[variables('dataDiskSnapshotName')]",
       "apiVersion": "2016-04-30-preview",
