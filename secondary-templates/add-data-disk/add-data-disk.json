@@ -21,7 +21,7 @@
       }
     },
     "dataDiskSize": {
-      "type": "string",
+      "type": "int",
       "metadata": {
         "description": "Data Disk Size"
       }
@@ -50,6 +50,23 @@
             }
           ]
         }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/snapshots",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]",
+        "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+      ],
+      "name": "[variables('dataDiskSnapshotName')]",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "creationData": {
+          "createOption": "Copy",
+          "sourceUri": "[resourceId('Microsoft.Compute/disks', parameters('dataDiskName'))]"
+        },
+        "accountType": "Standard_LRS"
       }
     }
   ]
