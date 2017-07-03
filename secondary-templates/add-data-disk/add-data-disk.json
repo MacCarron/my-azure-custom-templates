@@ -22,8 +22,7 @@
     }
   },
   "variables": {
-    "dataDiskName": "[concat(parameters('vmName'), '-datadisk01')]",
-    "dataDiskSnapshotName": "[concat(variables('dataDiskName'), '-pre-enc-snapshot')]"
+    "dataDiskSnapshotName": "[concat(parameters('dataDiskName'), '-pre-enc-snapshot')]"
   },
   "resources": [
     {
