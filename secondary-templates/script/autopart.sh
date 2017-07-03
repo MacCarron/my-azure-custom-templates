@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # An set of disks to ignore from partitioning and formatting
-BLACKLIST="/dev/sda|/dev/sdb"
+BLACKLIST="/dev/sda"
 
 usage() {
     echo "Usage: $(basename $0) <new disk>"
