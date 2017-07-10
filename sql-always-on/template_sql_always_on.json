@@ -1,0 +1,284 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "datadisksize": {
+      "type": "int",
+      "defaultValue": 32,
+      "metadata": {
+        "description": "the size of the data disk in GB"
+      }
+    },
+    "datadisktier": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "the storage tier to be used by the data disk"
+      }
+    },
+    "osdisktier": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "the storage tier to be used by the os disk"
+      }
+    },
+    "sqlnameprefix": {
+      "type": "string",
+      "defaultValue": "sqlalwayson",
+      "metadata": {
+        "description": "the prefix to be used to compose the SQL vm name, also used as hostname"
+      }
+    },
+    "subnet": {
+      "type": "string",
+      "defaultValue": "subnet02",
+      "metadata": {
+        "description": "the subnet used by the SQL vms"
+      }
+    },
+    "vmsize": {
+      "type": "string",
+      "defaultValue": "Standard_DS2_v2",
+      "metadata": {
+        "description": "SQL vms size"
+      }
+    },
+    "vNet": {
+      "type": "string",
+      "defaultValue": "vnet-tehlords.net",
+      "metadata": {
+        "description": "the virtual network used by the SQL vms"
+      }
+    },
+    "vnetRG": {
+      "type": "string",
+      "defaultValue": "mac-network-01",
+      "metadata": {
+        "description": "the resource group hosting the vnet"
+      }
+    }
+  },
+  "variables": {
+    "computeApiVersion": "2017-03-30",
+    "networkApiVersion": "2017-04-01",
+    "storageApiVersion": "2017-06-01",
+    "insightsApiVersion": "2017-04-01",
+    "vmAdminName": "sqladmin",
+    "vmAdminPwd": "Password@2017",
+    "publisher": "MicrosoftWindowsServer",
+    "offer": "WindowsServer",
+    "sku": "2012-R2-Datacenter",
+    "numberOfVMs": 2,
+    "avSetName": "sqlavset",
+    /// Load Balancer Variables
+    "publicIPName": "sqlalwayson-pip",
+    "publicIPID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPName'))]",
+    "loadBalancerName": "sqlalwayson-ilb",
+    "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers',variables('loadBalancerName'))]",
+    "bePoolName": "sqlalwayson-be",
+    "bePoolID": "[concat(variables('loadBalancerID'),'/backendAddressPools/', variables('bepoolName'))]",
+    "fePoolName": "sqlalwayson-fe",
+    "feIpConfigName": "[concat(variables('fePoolName'))]",
+    "frontEndIPConfigID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/', variables('feIpConfigName'))]",
+    "natBackendPort": "3389",
+    "SQLProbeName": "SQLProbe",
+    /// AV Set Variables
+    "avSetID": "[resourceId('Microsoft.Compute/availabilitySets', variables('avSetName'))]"
+  },
+  "resources": [
+    {
+      "name": "[variables('avSetName')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "[variables('computeApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('loadBalancerName')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('networkApiVersion')]",
+      "dependsOn": [],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('feIpConfigName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[concat(resourceId(parameters('vNetRG'), 'Microsoft.Network/VirtualNetworks', parameters('vNet')), '/subnets/', parameters('subnet'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('bePoolName')]"
+          }
+        ],
+        "inboundNatPools": [],
+        "loadBalancingRules": [
+          {
+            "name": "SQLRule",
+            "properties": {
+              "loadDistribution": "Default",
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('bepoolID')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 1433,
+              "backendPort": 1433,
+              "enableFloatingIP": false,
+              "idleTimeoutInMinutes": 5,
+              "probe": {
+                "id": "[concat(variables('loadBalancerID'), '/probes/', variables('SQLProbeName'))]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('SQLProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 1433,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "comments": "Network Interface properties",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(parameters('sqlnameprefix'), copyIndex(1), '-nic')]",
+      "apiVersion": "[variables('networkApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[concat(resourceId(parameters('vNetRG'), 'Microsoft.Network/VirtualNetworks', parameters('vNet')), '/subnets/', parameters('subnet'))]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[variables('bePoolID')]"
+                }
+              ]
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": []
+        },
+        "enableIPForwarding": false
+      },
+      "copy": {
+        "name": "copynic",
+        "count": "[variables('numberOfVMs')]"
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('sqlnameprefix'), copyIndex(1))]",
+      "apiVersion": "[variables('computeApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "[concat(parameters('sqlnameprefix'), copyIndex(1))]"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('publisher')]",
+            "offer": "[variables('offer')]",
+            "sku": "[variables('sku')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "name": "[concat(parameters('sqlnameprefix'), copyIndex(1), '-osdisk')]",
+            "managedDisk": {
+              "storageAccountType": "[parameters('osdisktier')]"
+            },
+            "caching": "ReadWrite",
+            "osType": "Windows"
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "createOption": "Empty",
+              "caching": "ReadWrite",
+              "diskSizeGB": "[parameters('datadisksize')]",
+              "name": "[concat(parameters('sqlnameprefix'), copyIndex(1), '-datadisk01')]",
+              "managedDisk": {
+                "storageAccountType": "[parameters('datadisktier')]"
+              }
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('sqlnameprefix'), copyIndex(1))]",
+          "adminUsername": "[variables('vmAdminName')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": [],
+          "adminPassword": "[variables('vmAdminPwd')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('sqlnameprefix'), copyIndex(1), '-nic'))]"
+            }
+          ]
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avSetName'))]"
+        }
+      },
+      "copy": {
+        "name": "copyvm",
+        "count": "[variables('numberOfVMs')]"
+      },
+      "dependsOn": [
+        "copynic",
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('avSetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(parameters('sqlnameprefix'), 'clwitness')]",
+      "apiVersion": "[variables('storageApiVersion')]",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "location": "westeurope",
+      "tags": {},
+      "properties": {},
+      "resources": [],
+      "dependsOn": []
+    }
+  ]
+}
