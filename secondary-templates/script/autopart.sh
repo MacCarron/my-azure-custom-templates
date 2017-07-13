@@ -36,6 +36,19 @@ add_to_fstab() {
     fi
 }
 
+add_cifs_to_fstab() {
+    SHARE=${1}
+    MOUNTPOINT=${2}
+    grep "${SHARE}" /etc/fstab >/dev/null 2>&1
+    if [ ${?} -eq 0 ];
+    then
+        echo "Not adding ${SHARE} to fstab again (it's already there!)"
+    else
+        LINE="${SHARE}\t${MOUNTPOINT}\tcifs\t_netdev,username=rhelfileshare01,password=6ZW+IS3Ezuv77dvghsoVnV2V9UOu8uJQPQ9G3dqcokkskpolveYGpnFQCZfUoQKZBFxvpv746b6U9SaIl3ocAQ==,dir_mode=0777,file_mode=0777,uid=500,gid=500\t0 0"
+        echo -e "${LINE}" >> /etc/fstab
+    fi
+}
+
 is_partitioned() {
 # Checks if there is a valid partition table on the
 # specified disk
@@ -108,3 +121,12 @@ add_to_fstab "${UUID}" "${MOUNTPOINT}"
 echo "Mounting disk ${PARTITION} on ${MOUNTPOINT}"
 mount "${MOUNTPOINT}"
 chmod go+w "${MOUNTPOINT}"
+
+AZUREFILES=/axway
+echo "Azure Fileshare path is ${AZUREFILES}"
+[ -d "${AZUREFILES}" ] || mkdir "${AZUREFILES}"
+SHARE=//rhelfileshare01.file.core.windows.net/axway
+add_cifs_to_fstab "${SHARE}" "${AZUREFILES}"
+echo "Mounting Azure share ${SHARE} on ${AZUREFILES}"
+mount "${AZUREFILES}"
+chmod go+w "${AZUREFILES}"
