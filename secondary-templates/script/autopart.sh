@@ -44,7 +44,7 @@ add_cifs_to_fstab() {
     then
         echo "Not adding ${SHARE} to fstab again (it's already there!)"
     else
-        LINE="${SHARE}\t${MOUNTPOINT}\tcifs\t_netdev,username=rhelfileshare01,password=6ZW+IS3Ezuv77dvghsoVnV2V9UOu8uJQPQ9G3dqcokkskpolveYGpnFQCZfUoQKZBFxvpv746b6U9SaIl3ocAQ==,dir_mode=0777,file_mode=0777,uid=500,gid=500\t0 0"
+        LINE="${SHARE}\t${MOUNTPOINT}\tcifs\t_netdev,vers=3.0,username=rhelfileshare01,password=6ZW+IS3Ezuv77dvghsoVnV2V9UOu8uJQPQ9G3dqcokkskpolveYGpnFQCZfUoQKZBFxvpv746b6U9SaIl3ocAQ==,dir_mode=0777,file_mode=0777,uid=500,gid=500\t0 0"
         echo -e "${LINE}" >> /etc/fstab
     fi
 }
