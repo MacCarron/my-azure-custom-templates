@@ -450,24 +450,6 @@
             }
         },
         {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "[variables('networkApiVersion')]",
-            "location": "[variables('location')]",
-            "name": "[variables('appAddressName')]",
-            "sku": {
-                "name": "Standard"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Static",
-                "dnsSettings": {
-                    "domainNameLabel": "[concat(toLower(parameters('vmName')), '-', uniquestring(resourceGroup().id, deployment().name))]"
-                }
-            },
-            "tags": {
-                "provider": "[toUpper(parameters('Check_PointTags').provider)]"
-            }
-        },
-        {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "[variables('networkApiVersion')]",
             "location": "[variables('location')]",
@@ -486,70 +468,6 @@
                             "access": "Allow",
                             "priority": "100",
                             "direction": "Inbound"
-                        }
-                    }
-                ]
-            },
-            "tags": {
-                "provider": "[toUpper(parameters('Check_PointTags').provider)]"
-            }
-        },
-        {
-            "type": "Microsoft.Network/loadBalancers",
-            "apiVersion": "[variables('networkApiVersion')]",
-            "name": "[variables('elbName')]",
-            "location": "[variables('location')]",
-            "sku": {
-                "name": "Standard"
-            },
-            "dependsOn": [
-                "[variables('appAddressId')]"
-            ],
-            "properties": {
-                "frontendIPConfigurations": [
-                    {
-                        "name": "[variables('appFEName')]",
-                        "properties": {
-                            "publicIPAddress": {
-                                "id": "[variables('appAddressId')]"
-                            }
-                        }
-                    }
-                ],
-                "backendAddressPools": [
-                    {
-                        "name": "[variables('elbBEAddressPool')]"
-                    }
-                ],
-                "loadBalancingRules": [
-                    {
-                        "name": "[variables('appName')]",
-                        "properties": {
-                            "frontendIPConfiguration": {
-                                "id": "[variables('appFEIPConfigID')]"
-                            },
-                            "backendAddressPool": {
-                                "id": "[variables('elbBEAddressPoolID')]"
-                            },
-                            "probe": {
-                                "id": "[variables('appProbeID')]"
-                            },
-                            "protocol": "[variables('appFrontEndProtocol')]",
-                            "frontendPort": "[variables('appFrontEndPort')]",
-                            "backendPort": "[variables('appBackEndPort')]",
-                            "enableFloatingIP": false,
-                            "loadDistribution": "[variables('appLoadDistribution')]"
-                        }
-                    }
-                ],
-                "probes": [
-                    {
-                        "name": "[variables('appProbeName')]",
-                        "properties": {
-                            "protocol": "[variables('appHealthProtocol')]",
-                            "port": "[variables('lbHealthPort')]",
-                            "intervalInSeconds": "5",
-                            "numberOfProbes": "2"
                         }
                     }
                 ]
@@ -648,7 +566,6 @@
                 "provider": "[toUpper(parameters('Check_PointTags').provider)]"
             },
             "dependsOn": [
-                "[variables('elbID')]",
                 "[variables('ilbID')]",
                 "[resourceId('Microsoft.Resources/deployments', 'networkSetup')]",
                 "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
@@ -700,11 +617,7 @@
                                                 "subnet": {
                                                     "id": "[concat(reference('networkSetup').outputs.vnetId.value, '/subnets/', parameters('subnet1Name'))]"
                                                 },
-                                                "loadBalancerBackendAddressPools": [
-                                                    {
-                                                        "id": "[variables('elbBEAddressPoolID')]"
-                                                    }
-                                                ]
+                                                "loadBalancerBackendAddressPools": []
                                             }
                                         }
                                     ]
