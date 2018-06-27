@@ -734,15 +734,5 @@
                 "provider": "[toUpper(parameters('Check_PointTags').provider)]"
             }
         }
-    ],
-    "outputs": {
-        "ApplicationAddress": {
-            "type": "string",
-            "value": "[reference(variables('appAddressId')).IpAddress]"
-        },
-        "ApplicationFQDN": {
-            "type": "string",
-            "value": "[reference(variables('appAddressId')).dnsSettings.fqdn]"
-        }
-    }
+    ]
 }
