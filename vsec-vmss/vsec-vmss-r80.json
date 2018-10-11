@@ -449,34 +449,7 @@
                     }
                 }
             }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "[variables('networkApiVersion')]",
-            "location": "[variables('location')]",
-            "name": "[variables('nsgName')]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "AllowAllInBound",
-                        "properties": {
-                            "description": "Allow all inbound connections",
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "*",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": "100",
-                            "direction": "Inbound"
-                        }
-                    }
-                ]
-            },
-            "tags": {
-                "provider": "[toUpper(parameters('Check_PointTags').provider)]"
-            }
-        },
+        }
         {
             "type": "Microsoft.Network/loadBalancers",
             "apiVersion": "[variables('networkApiVersion')]",
@@ -569,8 +542,7 @@
             "dependsOn": [
                 "[variables('ilbID')]",
                 "[resourceId('Microsoft.Resources/deployments', 'networkSetup')]",
-                "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-                "[variables('nsgId')]"
+                "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
             ],
             "sku": {
                 "name": "[parameters('vmSize')]",
@@ -607,9 +579,8 @@
                                 "properties": {
                                     "primary": true,
                                     "enableIPForwarding": false,
-                                    "networkSecurityGroup": {
-                                        "id": "[variables('nsgId')]"
-                                    },
+                                    "enableAcceleratedNetworking" : true,
+                                    "networkSecurityGroup": {},
                                     "ipConfigurations": [
                                         {
                                             "name": "ipconfig1",
@@ -629,6 +600,7 @@
                                 "properties": {
                                     "primary": false,
                                     "enableIPForwarding": true,
+                                    "enableAcceleratedNetworking" : true,
                                     "ipConfigurations": [
                                         {
                                             "name": "ipconfig2",
@@ -688,46 +660,7 @@
                             "maximum": "[parameters('maxInstanceCount')]",
                             "default": "[parameters('instanceCount')]"
                         },
-                        "rules": [
-                            {
-                                "metricTrigger": {
-                                    "metricName": "Percentage CPU",
-                                    "metricNamespace": "",
-                                    "metricResourceUri": "[variables('vmssID')]",
-                                    "timeGrain": "PT1M",
-                                    "statistic": "Average",
-                                    "timeWindow": "PT5M",
-                                    "timeAggregation": "Average",
-                                    "operator": "GreaterThan",
-                                    "threshold": 80
-                                },
-                                "scaleAction": {
-                                    "direction": "Increase",
-                                    "type": "ChangeCount",
-                                    "value": "1",
-                                    "cooldown": "PT5M"
-                                }
-                            },
-                            {
-                                "metricTrigger": {
-                                    "metricName": "Percentage CPU",
-                                    "metricNamespace": "",
-                                    "metricResourceUri": "[variables('vmssID')]",
-                                    "timeGrain": "PT1M",
-                                    "statistic": "Average",
-                                    "timeWindow": "PT5M",
-                                    "timeAggregation": "Average",
-                                    "operator": "LessThan",
-                                    "threshold": 60
-                                },
-                                "scaleAction": {
-                                    "direction": "Decrease",
-                                    "type": "ChangeCount",
-                                    "value": "1",
-                                    "cooldown": "PT5M"
-                                }
-                            }
-                        ]
+                        "rules": []
                     }
                 ]
             },
