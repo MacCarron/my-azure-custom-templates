@@ -577,7 +577,7 @@
                             {
                                 "name": "eth0",
                                 "properties": {
-                                    "primary": true,
+                                    "primary": false,
                                     "enableIPForwarding": false,
                                     "enableAcceleratedNetworking" : true,
                                     "networkSecurityGroup": {},
@@ -598,7 +598,7 @@
                             {
                                 "name": "eth1",
                                 "properties": {
-                                    "primary": false,
+                                    "primary": true,
                                     "enableIPForwarding": true,
                                     "enableAcceleratedNetworking" : true,
                                     "ipConfigurations": [
