@@ -577,8 +577,8 @@
                             {
                                 "name": "eth0",
                                 "properties": {
-                                    "primary": false,
-                                    "enableIPForwarding": false,
+                                    "primary": true,
+                                    "enableIPForwarding": true,
                                     "enableAcceleratedNetworking" : true,
                                     "networkSecurityGroup": {},
                                     "ipConfigurations": [
@@ -589,7 +589,11 @@
                                                 "subnet": {
                                                     "id": "[concat(reference('networkSetup').outputs.vnetId.value, '/subnets/', parameters('subnet1Name'))]"
                                                 },
-                                                "loadBalancerBackendAddressPools": []
+                                                "loadBalancerBackendAddressPools": [
+                                                    {
+                                                        "id": "[variables('ilbBEAddressPoolID')]"
+                                                    }
+                                                ]
                                             }
                                         }
                                     ]
@@ -598,8 +602,8 @@
                             {
                                 "name": "eth1",
                                 "properties": {
-                                    "primary": true,
-                                    "enableIPForwarding": true,
+                                    "primary": false,
+                                    "enableIPForwarding": false,
                                     "enableAcceleratedNetworking" : true,
                                     "ipConfigurations": [
                                         {
@@ -608,11 +612,7 @@
                                                 "subnet": {
                                                     "id": "[concat(reference('networkSetup').outputs.vnetId.value, '/subnets/', parameters('subnet2Name'))]"
                                                 },
-                                                "loadBalancerBackendAddressPools": [
-                                                    {
-                                                        "id": "[variables('ilbBEAddressPoolID')]"
-                                                    }
-                                                ]
+                                                "loadBalancerBackendAddressPools": []
                                             }
                                         }
                                     ]
