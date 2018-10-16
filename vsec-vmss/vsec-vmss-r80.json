@@ -143,7 +143,7 @@
             },
             "defaultValue": "10.0.2.0/24"
         },
-        "Subnet2StartAddress": {
+        "Subnet1StartAddress": {
             "type": "string",
             "metadata": {
                 "description": "The first available address on the 2nd subnet"
@@ -397,7 +397,7 @@
         "sicKey": "[parameters('sicKey')]",
         "managementGUIClientNetwork": "",
         "installationType": "vmss",
-        "internalLBPrivateIPAddress": "[parameters('Subnet2StartAddress')]",
+        "internalLBPrivateIPAddress": "[parameters('Subnet1StartAddress')]",
         "publicIPProperties": {
             "name": "instancePublicIP",
             "properties": {
@@ -466,7 +466,7 @@
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "[variables('internalLBPrivateIPAddress')]",
                             "subnet": {
-                                "id": "[concat(reference('networkSetup').outputs.vnetId.value, '/subnets/', parameters('subnet2Name'))]"
+                                "id": "[concat(reference('networkSetup').outputs.vnetId.value, '/subnets/', parameters('subnet1Name'))]"
                             }
                         }
                     }
