@@ -400,12 +400,12 @@ if [ "$installationType" == "vmss" ]; then
     log-data "VMSS - Set dynamic objects: (Int: $IntAddr) \\n$(dynamic_objects -l)"
 
     # add static route for all vnet but Frontend to use eth1:
-    subnet2Prefix="$(getInstanceMetadata | jq -r ".network.interface[1].ipv4.subnet[].address")"
-    firstThreeOctats="$(echo $subnet2Prefix | cut -d / -f 1 | cut -d . -f 1,2,3)"
-    forthOctats="$(echo $subnet2Prefix | cut -d / -f 1 | cut -d . -f 4)"
+    subnet1Prefix="$(getInstanceMetadata | jq -r ".network.interface[0].ipv4.subnet[].address")"
+    firstThreeOctats="$(echo $subnet1Prefix | cut -d / -f 1 | cut -d . -f 1,2,3)"
+    forthOctats="$(echo $subnet1Prefix | cut -d / -f 1 | cut -d . -f 4)"
     forthOctats="$(( forthOctats + 1 ))"
     router="$firstThreeOctats.$forthOctats"
-    log-data "Internal subnet CIDR: $subnet2Prefix" "Internal subnet gateway: $router"
+    log-data "Internal subnet CIDR: $subnet1Prefix" "Internal subnet gateway: $router"
     vnets=("$vnet" "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16")
     runcmd -rc "1 0" clish -c "lock database override" >&2
     for vnet in "${vnets[@]}"; do
